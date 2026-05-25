@@ -1,0 +1,6 @@
+{
+  "name": "CBT Matematika Kelas 7",
+  "description": "Aplikasi Computer Based Test (CBT) Matematika Kelas 7 SMP Kurikulum Merdeka.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
