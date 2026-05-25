@@ -13,21 +13,29 @@ export default function App() {
   const [screen, setScreen] = useState<'login' | 'exam' | 'results' | 'pembahasan'>('login');
   const [studentName, setStudentName] = useState('');
   const [studentClass, setStudentClass] = useState('7A');
-  const [scriptUrl, setScriptUrl] = useState('https://script.google.com/macros/s/AKfycbzJnpQF911UVO51_qYwHjuM1utuLqz8u59yo25V_JHUFI3m4gscFXv8_OKK66W8H8vaWQ/exec');
+  const [scriptUrl, setScriptUrl] = useState('https://script.google.com/macros/s/AKfycbyoa14tzyA4geqSLAK2sbTt_HQM8tXniKUX1fm-XwKkGwQC4ce3Ux7vV1NGKTCjH0hP0w/exec');
   
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<{ [key: number]: any }>({});
   const [doubtful, setDoubtful] = useState<{ [key: number]: boolean }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resultData, setResultData] = useState<StudentResult | null>(null);
+  const [pembahasanEnabled, setPembahasanEnabled] = useState<boolean>(() => {
+    const saved = localStorage.getItem('cbt_pembahasan_enabled');
+    return saved === null ? true : saved === 'true';
+  });
+  const [pembahasanPassword, setPembahasanPassword] = useState<string>(() => {
+    const saved = localStorage.getItem('cbt_pembahasan_password');
+    return saved === null ? '12345678' : saved;
+  });
 
   // Restore previous configurations on load (e.g. Teacher's GApp Script URL)
   useEffect(() => {
     const savedUrl = localStorage.getItem('cbt_teacher_script_url');
     if (savedUrl) {
-      setScriptUrl(savedUrl);
+       setScriptUrl(savedUrl);
     } else {
-      setScriptUrl('https://script.google.com/macros/s/AKfycbzJnpQF911UVO51_qYwHjuM1utuLqz8u59yo25V_JHUFI3m4gscFXv8_OKK66W8H8vaWQ/exec');
+      setScriptUrl('https://script.google.com/macros/s/AKfycbyoa14tzyA4geqSLAK2sbTt_HQM8tXniKUX1fm-XwKkGwQC4ce3Ux7vV1NGKTCjH0hP0w/exec');
     }
   }, []);
 
@@ -217,7 +225,14 @@ export default function App() {
       
       {/* 1. LOGIN SCREEN CONTAINER */}
       {screen === 'login' && (
-        <LoginScreen onLogin={handleLogin} savedScriptUrl={scriptUrl} />
+        <LoginScreen 
+          onLogin={handleLogin} 
+          savedScriptUrl={scriptUrl} 
+          pembahasanEnabled={pembahasanEnabled}
+          setPembahasanEnabled={setPembahasanEnabled}
+          pembahasanPassword={pembahasanPassword}
+          setPembahasanPassword={setPembahasanPassword}
+        />
       )}
 
       {/* 2. EXAM ONLINE SCREEN CONTAINER */}
@@ -355,6 +370,8 @@ export default function App() {
           onReviewSolutions={handleReviewSolutions}
           onRestart={handleRestartExam}
           scriptUrl={scriptUrl}
+          pembahasanEnabled={pembahasanEnabled}
+          pembahasanPassword={pembahasanPassword}
         />
       )}
 

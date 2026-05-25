@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Award, CheckCircle, ChevronRight, FileText, Printer, Trophy, Users, RefreshCw } from 'lucide-react';
+import { Award, CheckCircle, ChevronRight, FileText, Printer, Trophy, Users, RefreshCw, Lock, X, KeyRound } from 'lucide-react';
 import { StudentResult } from '../types';
 
 interface ResultsScreenProps {
@@ -7,16 +7,23 @@ interface ResultsScreenProps {
   onReviewSolutions: () => void;
   onRestart: () => void;
   scriptUrl: string;
+  pembahasanEnabled: boolean;
+  pembahasanPassword: string;
 }
 
 export default function ResultsScreen({
   result,
   onReviewSolutions,
   onRestart,
-  scriptUrl
+  scriptUrl,
+  pembahasanEnabled,
+  pembahasanPassword
 }: ResultsScreenProps) {
   const [leaderboard, setLeaderboard] = useState<StudentResult[]>([]);
   const [copiedScript, setCopiedScript] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordInput, setPasswordInput] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
   // Load and update leaderboard from localStorage
   useEffect(() => {
@@ -207,14 +214,20 @@ export default function ResultsScreen({
               Cetak Sertifikat Hasil (PDF)
             </button>
             
-            <button
-              id="btn-review-math-solutions"
-              onClick={onReviewSolutions}
-              className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-6 rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-md transition-transform transform hover:-translate-y-0.5"
-            >
-              <FileText className="w-5 h-5" />
-              Lihat Pembahasan Lengkap & Kisi-Kisi
-            </button>
+            {pembahasanEnabled && (
+              <button
+                id="btn-review-math-solutions"
+                onClick={() => {
+                  setPasswordInput('');
+                  setPasswordError('');
+                  setShowPasswordModal(true);
+                }}
+                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-6 rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-md transition-transform transform hover:-translate-y-0.5"
+              >
+                <FileText className="w-5 h-5" />
+                Lihat Pembahasan Lengkap & Kisi-Kisi
+              </button>
+            )}
           </div>
         </div>
 
@@ -294,6 +307,90 @@ export default function ResultsScreen({
         </div>
 
       </div>
+
+      {/* PASSWORD MODAL OVERLAY */}
+      {showPasswordModal && (
+        <div id="password-modal-overlay" className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div id="password-modal-card" className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-md w-full overflow-hidden">
+            <div id="password-modal-header" className="bg-indigo-600 text-white p-5 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Lock className="w-5 h-5 text-amber-400" />
+                <span className="font-extrabold text-sm uppercase tracking-wide">Autentikasi Pembahasan</span>
+              </div>
+              <button
+                id="btn-close-password-modal"
+                onClick={() => setShowPasswordModal(false)}
+                className="text-white/80 hover:text-white hover:bg-white/10 p-1.5 rounded-lg transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form 
+              id="password-form" 
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (passwordInput === pembahasanPassword) {
+                  setShowPasswordModal(false);
+                  onReviewSolutions();
+                } else {
+                  setPasswordError('Sandi salah! Silakan tanyakan sandi dari Guru Matematika Anda.');
+                }
+              }} 
+              className="p-6 space-y-5"
+            >
+              <div className="space-y-2">
+                <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                  Halaman Kisi-Kisi dan Pembahasan dilindungi oleh kata sandi guru. Masukkan password ujian untuk membuka akses pembahasan:
+                </p>
+                
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                    <KeyRound className="w-4.5 h-4.5" />
+                  </span>
+                  <input
+                    id="password-input-field"
+                    type="password"
+                    autoFocus
+                    required
+                    placeholder="Masukkan sandi..."
+                    value={passwordInput}
+                    onChange={(e) => {
+                      setPasswordInput(e.target.value);
+                      if (passwordError) setPasswordError('');
+                    }}
+                    className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-slate-900 transition-all font-mono font-bold text-center text-sm md:text-base tracking-[0.25em]"
+                  />
+                </div>
+                
+                {passwordError && (
+                  <p id="password-error-message" className="text-red-700 font-bold text-[11px] bg-red-50 p-2.5 rounded-lg border-l-4 border-red-500">
+                    {passwordError}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  id="btn-cancel-password-modal"
+                  type="button"
+                  onClick={() => setShowPasswordModal(false)}
+                  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-705 font-bold py-2.5 rounded-xl text-xs transition-colors cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  id="btn-submit-password"
+                  type="submit"
+                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl text-xs transition-colors shadow-md shadow-indigo-100 cursor-pointer"
+                >
+                  Buka Akses
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Global CSS for printing certificate only when requested */}
       <style>{`

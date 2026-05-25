@@ -4,12 +4,23 @@ import { Award, BookOpen, GraduationCap, Link2, Play, Settings } from 'lucide-re
 interface LoginScreenProps {
   onLogin: (nama: string, kelas: string, scriptUrl: string) => void;
   savedScriptUrl: string;
+  pembahasanEnabled: boolean;
+  setPembahasanEnabled: (val: boolean) => void;
+  pembahasanPassword: string;
+  setPembahasanPassword: (val: string) => void;
 }
 
-export default function LoginScreen({ onLogin, savedScriptUrl }: LoginScreenProps) {
+export default function LoginScreen({ 
+  onLogin, 
+  savedScriptUrl,
+  pembahasanEnabled,
+  setPembahasanEnabled,
+  pembahasanPassword,
+  setPembahasanPassword
+}: LoginScreenProps) {
   const [nama, setNama] = useState('');
   const [kelas, setKelas] = useState('7A');
-  const [scriptUrl, setScriptUrl] = useState(savedScriptUrl || 'https://script.google.com/macros/s/AKfycbzJnpQF911UVO51_qYwHjuM1utuLqz8u59yo25V_JHUFI3m4gscFXv8_OKK66W8H8vaWQ/exec');
+  const [scriptUrl, setScriptUrl] = useState(savedScriptUrl || 'https://script.google.com/macros/s/AKfycbyoa14tzyA4geqSLAK2sbTt_HQM8tXniKUX1fm-XwKkGwQC4ce3Ux7vV1NGKTCjH0hP0w/exec');
   const [showConfig, setShowConfig] = useState(false);
   const [errors, setErrors] = useState<string | null>(null);
 
@@ -258,6 +269,65 @@ function doOptions(e) {
                 <p id="script-help" className="text-[10px] text-slate-400">
                   Ujian tetap dapat dijalankan penuh bahkan tanpa Script URL ini, data akan disimulasikan secara otomatis.
                 </p>
+              </div>
+
+              <div id="pembahasan-admin-toggle" className="space-y-1.5 pt-2 border-t border-slate-100">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center justify-between">
+                  <span>Akses Kunci & Pembahasan Siswa</span>
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-bold ${pembahasanEnabled ? 'bg-emerald-50 text-emerald-750' : 'bg-red-50 text-red-750'}`}>
+                    {pembahasanEnabled ? 'AKTIF (ON)' : 'DISEMBUNYIKAN (OFF)'}
+                  </span>
+                </label>
+                <div className="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-205">
+                  <div className="text-[10px] leading-tight text-slate-500 max-w-[70%] font-medium">
+                    {pembahasanEnabled 
+                      ? 'Siswa dapat membuka pembahasan dari halaman hasil dengan memasukkan kata sandi Guru'
+                      : 'Halaman & tombol Pembahasan disembunyikan seluruhnya dari siswa'
+                    }
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nextVal = !pembahasanEnabled;
+                      setPembahasanEnabled(nextVal);
+                      localStorage.setItem('cbt_pembahasan_enabled', String(nextVal));
+                    }}
+                    className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:ring-1 focus:ring-amber-500 focus:outline-none ${
+                      pembahasanEnabled ? 'bg-indigo-600' : 'bg-slate-300'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-all ${
+                        pembahasanEnabled ? 'translate-x-[22px]' : 'translate-x-[2px]'
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {pembahasanEnabled && (
+                  <div id="pembahasan-password-config" className="space-y-1 pt-2 pl-2 border-l-2 border-indigo-500 mt-2 bg-slate-50/50 p-2 rounded-lg">
+                    <label htmlFor="pembahasan-password-input" className="text-[10px] font-bold text-slate-500 uppercase tracking-wide flex justify-between">
+                      <span>Kata Sandi Kunci Pembahasan</span>
+                      <span className="text-[9px] text-slate-400 capitalize font-normal">Sandi saat ini: {pembahasanPassword}</span>
+                    </label>
+                    <input
+                      id="pembahasan-password-input"
+                      type="text"
+                      required
+                      placeholder="Masukkan sandi kunci..."
+                      value={pembahasanPassword}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setPembahasanPassword(val);
+                        localStorage.setItem('cbt_pembahasan_password', val);
+                      }}
+                      className="w-full px-3 py-1.5 border border-slate-200 rounded-lg focus:ring-1 focus:ring-amber-500 focus:border-amber-500 outline-none text-xs font-mono font-bold text-slate-800 bg-white"
+                    />
+                    <p className="text-[9px] text-slate-400">
+                      Ubah sandi jika Anda ingin melindungi modul pembahasan dengan kata sandi selain 12345678.
+                    </p>
+                  </div>
+                )}
               </div>
 
               <button
